@@ -1,5 +1,5 @@
 import torch.nn as nn
-from utils.clones import clones
+from utils.helpers import clones
 
 from transformer.norm import LayerNorm
 from transformer.sublayer import SublayerConnection

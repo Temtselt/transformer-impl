@@ -2,7 +2,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.clones import clones
+from utils.helpers import clones
 
 
 class MultiHeadedAttention(nn.Module):
