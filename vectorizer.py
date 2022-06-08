@@ -28,8 +28,8 @@ class Vectorizer(object):
         indices = [
             self.source_vocab.lookup_token(token) for token in target_text.split(" ")
         ]
-        x_indices = [self.source_vocab.begin_seq_indices] + indices
-        y_indices = indices + [self.target_vocab.end_seq_indices]
+        x_indices = [self.source_vocab.begin_seq_index] + indices
+        y_indices = indices + [self.target_vocab.end_seq_index]
 
         return x_indices, y_indices
 
@@ -93,8 +93,8 @@ class Vectorizer(object):
         max_target_length = 0
 
         for _, row in bitext_df.iterrows():
-            source_tokens = row["source_text"].split(" ")
-            target_tokens = row["target_text"].split(" ")
+            source_tokens = row["cyrillic"].split(" ")
+            target_tokens = row["bichig"].split(" ")
 
             if len(source_tokens) > max_source_length:
                 max_source_length = len(source_tokens)
@@ -102,8 +102,11 @@ class Vectorizer(object):
             if len(target_tokens) > max_target_length:
                 max_target_length = len(target_tokens)
 
-            source_vocab.add_token(token for token in source_tokens)
-            target_vocab.add_token(token for token in target_tokens)
+            for token in source_tokens:
+                source_vocab.add_token(token)
+
+            for token in target_tokens:
+                target_vocab.add_token(token)
 
         return cls(source_vocab, target_vocab, max_source_length, max_target_length)
 

@@ -52,7 +52,7 @@ class Dataset(Dataset):
 
     def save_vectorizer(self, vectorizer_filepath):
         with open(vectorizer_filepath, "w") as fp:
-            json.dump(Vectorizer.to_serializable(), fp)
+            json.dump(self._vectorizer.to_serializable(), fp)
 
     def get_vectorizer(self):
         return self._vectorizer
@@ -70,7 +70,7 @@ class Dataset(Dataset):
         """
         row = self._target_df.iloc[index]
 
-        vector_dict = self._vectorizer.vectorize(row.source_text, row.target_text)
+        vector_dict = self._vectorizer.vectorize(row.cyrillic, row.bichig)
 
         return {
             "x_source": vector_dict["source_vector"],
@@ -88,3 +88,8 @@ class Dataset(Dataset):
             number of batches in the dataset
         """
         return len(self) // batch_size
+
+if __name__ == '__main__':
+    dataset = Dataset.load_dataset_and_make_vectorizer('data/lyrics_lite.csv')
+    vectorizer = dataset.get_vectorizer()
+    dataset.save_vectorizer('temp/vectorizer.json')
