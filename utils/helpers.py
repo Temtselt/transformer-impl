@@ -17,7 +17,7 @@ def create_dataframe(txt_path):
     val["split"] = "val"
     test["split"] = "test"
 
-    df = pd.concat([train, test, test], ignore_index=True)
+    df = pd.concat([train, val, test], ignore_index=True)
 
     with open("data/lyrics.csv", "w") as fp:
         df.to_csv(fp, index=False)
