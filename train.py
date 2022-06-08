@@ -5,10 +5,16 @@ from argparse import Namespace
 
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
 
 from transformer.embeddings import Embeddings
-from transformer.encoder_decoder import (Decoder, DecoderLayer, Encoder,
-                                         EncoderDecoder, EncoderLayer)
+from transformer.encoder_decoder import (
+    Decoder,
+    DecoderLayer,
+    Encoder,
+    EncoderDecoder,
+    EncoderLayer,
+)
 from transformer.generator import Generator
 from transformer.multi_head_attention import MultiHeadedAttention
 from transformer.positionwise_feed_forward import PositionwiseFeedForward
@@ -37,25 +43,6 @@ args = Namespace(
 
 
 def make_model(src_vocab, tgt_vocab, N=6, d_model=512, d_ff=2048, h=8, dropout=0.1):
-    if args.expand_filepaths_to_save_dir:
-        args.vectorizer_file = os.path.join(args.save_dir, args.vectorizer_file)
-        args.model_state_file = os.path.join(args.save_dir, args.model_state_file)
-        Logger.logi(
-            __name__,
-            "Expanded filepaths: \n"
-            f"\t{args.vectorizer_file}\n"
-            f"\t{args.model_state_file}",
-        )
-
-    if not torch.cuda.is_available():
-        args.cuda = False
-        Logger.logi(__name__, "CUDA is not available")
-
-    args.device = torch.device("cuda" if args.cuda else "cpu")
-    Logger.logi(__name__, f"Using CUDA: {args.cuda}")
-
-    set_seed_everywhere(args.seed, args.cuda)
-    handle_dirs(args.save_dir)
 
     c = copy.deepcopy
     attn = MultiHeadedAttention(h, d_model)
@@ -104,6 +91,22 @@ def run_epoch(data_iter, model, loss_compute):
 global max_src_in_batch, max_tgt_in_batch
 
 
+def generate_batches(dataset, batch_size, shuffle=True, drop_last=True, device="cpu"):
+    """A generator function which wraps the PyTorch DataLoader."""
+    dataloader = DataLoader(
+        dataset=dataset, batch_size=batch_size, shuffle=shuffle, drop_last=drop_last
+    )
+
+    for data_dict in dataloader:
+        lengths = data_dict["x_source_length"].numpy()
+        sorted_length_indices = lengths.argsort()[::-1].tolist()
+
+        out_data_dict = {}
+        for name, tensor in data_dict.items():
+            out_data_dict[name] = data_dict[name][sorted_length_indices].to(device)
+        yield out_data_dict
+
+
 def batch_size_fn(new, count, sofar):
     "Keep augmenting batch and calculate total number of tokens + padding."
     global max_src_in_batch, max_tgt_in_batch
@@ -118,4 +121,23 @@ def batch_size_fn(new, count, sofar):
 
 
 if __name__ == "__main__":
+    if args.expand_filepaths_to_save_dir:
+        args.vectorizer_file = os.path.join(args.save_dir, args.vectorizer_file)
+        args.model_state_file = os.path.join(args.save_dir, args.model_state_file)
+        Logger.logi(
+            __name__,
+            "Expanded filepaths: \n"
+            f"\t{args.vectorizer_file}\n"
+            f"\t{args.model_state_file}",
+        )
+
+    if not torch.cuda.is_available():
+        args.cuda = False
+        Logger.logi(__name__, "CUDA is not available")
+
+    args.device = torch.device("cuda" if args.cuda else "cpu")
+    Logger.logi(__name__, f"Using CUDA: {args.cuda}")
+
+    set_seed_everywhere(args.seed, args.cuda)
+    handle_dirs(args.save_dir)
     tmp_model = make_model(10, 10, 2)
