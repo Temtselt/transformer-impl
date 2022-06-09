@@ -39,10 +39,7 @@ class Vocabulary(object):
         Returns:
             index (int): the index corresponding to the token
         """
-        if self._unk_index >= 0:
-            return self._token_to_idx.get(token, self._unk_index)
-        else:
-            return self._token_to_idx[token]
+        return self._token_to_idx[token]
 
     def lookup_index(self, index):
         """Return the token associated with the index
@@ -99,3 +96,20 @@ class SequenceVocabulary(Vocabulary):
         )
 
         return contents
+
+    def lookup_token(self, token):
+        """Retrieve the index associated with the token
+          or the UNK index if token isn't present.
+
+        Args:
+            token (str): the token to look up
+        Returns:
+            index (int): the index corresponding to the token
+        Notes:
+            `unk_index` needs to be >=0 (having been added into the Vocabulary)
+              for the UNK functionality
+        """
+        if self.unk_index >= 0:
+            return self._token_to_idx.get(token, self.unk_index)
+        else:
+            return self._token_to_idx[token]
