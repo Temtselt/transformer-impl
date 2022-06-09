@@ -1,7 +1,9 @@
 import json
+
 import pandas as pd
 from torch.utils.data import Dataset
 
+from utils.logger import Logger
 from vectorizer import Vectorizer
 
 
@@ -36,12 +38,18 @@ class Dataset(Dataset):
         text_df = pd.read_csv(dataset_csv)
         train_subset = text_df[text_df.split == "train"]
 
+        Logger.logi(__class__, "Load dataset and make new vectorizer.")
+
         return cls(text_df, Vectorizer.from_dataframe(train_subset))
 
     @classmethod
     def load_dataset_and_load_vectorizer(cls, dataset_csv, vectorizer_filepath):
         text_df = pd.read_csv(dataset_csv)
         vectorizer = cls.load_vectorizer_only(vectorizer_filepath)
+
+        Logger.logi(
+            __class__, f"Load dataset and load vectorizer from {vectorizer_filepath}."
+        )
 
         return cls(text_df, vectorizer)
 
@@ -53,6 +61,7 @@ class Dataset(Dataset):
     def save_vectorizer(self, vectorizer_filepath):
         with open(vectorizer_filepath, "w") as fp:
             json.dump(self._vectorizer.to_serializable(), fp)
+            Logger.logi(__class__, f"Save vectorizer to {vectorizer_filepath}.")
 
     def get_vectorizer(self):
         return self._vectorizer
@@ -89,7 +98,8 @@ class Dataset(Dataset):
         """
         return len(self) // batch_size
 
-if __name__ == '__main__':
-    dataset = Dataset.load_dataset_and_make_vectorizer('data/lyrics_lite.csv')
+
+if __name__ == "__main__":
+    dataset = Dataset.load_dataset_and_make_vectorizer("data/lyrics_lite.csv")
     vectorizer = dataset.get_vectorizer()
-    dataset.save_vectorizer('temp/vectorizer.json')
+    dataset.save_vectorizer("temp/vectorizer.json")
