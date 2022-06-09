@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from transformer.norm import LayerNorm
+from model.norm import LayerNorm
 
 
 class SublayerConnection(nn.Module):
