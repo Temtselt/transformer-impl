@@ -1,8 +1,8 @@
 import torch.nn as nn
 from utils.helpers import clones
 
-from transformer.norm import LayerNorm
-from transformer.sublayer import SublayerConnection
+from model.norm import LayerNorm
+from model.sublayer import SublayerConnection
 
 
 class EncoderLayer(nn.Module):
@@ -63,9 +63,9 @@ class Decoder(nn.Module):
         return self.norm(x)
 
 
-class EncoderDecoder(nn.Module):
+class Transformer(nn.Module):
     def __init__(self, encoder, decoder, src_embed, tgt_embed, generator) -> None:
-        super(EncoderDecoder, self).__init__()
+        super(Transformer, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.src_embed = src_embed

@@ -6,19 +6,20 @@ from argparse import Namespace
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from dataset import Dataset
 
-from transformer.embeddings import Embeddings
-from transformer.encoder_decoder import (
+from model.embeddings import Embeddings
+from model.transformer import (
     Decoder,
     DecoderLayer,
     Encoder,
-    EncoderDecoder,
+    Transformer,
     EncoderLayer,
 )
-from transformer.generator import Generator
-from transformer.multi_head_attention import MultiHeadedAttention
-from transformer.positionwise_feed_forward import PositionwiseFeedForward
-from transformer.postional_encoding import PositionalEncoding
+from model.generator import Generator
+from model.multi_head_attention import MultiHeadedAttention
+from model.positionwise_feed_forward import PositionwiseFeedForward
+from model.postional_encoding import PositionalEncoding
 from utils.helpers import handle_dirs, set_seed_everywhere
 from utils.logger import Logger
 
@@ -43,13 +44,14 @@ args = Namespace(
 
 
 def make_model(src_vocab, tgt_vocab, N=6, d_model=512, d_ff=2048, h=8, dropout=0.1):
+    "Construct a model from hyperparameters."
 
     c = copy.deepcopy
     attn = MultiHeadedAttention(h, d_model)
     ff = PositionwiseFeedForward(d_model, d_ff, dropout)
     position = PositionalEncoding(d_model, dropout, 512)
 
-    model = EncoderDecoder(
+    model = Transformer(
         Encoder(EncoderLayer(d_model, c(attn), c(ff), dropout), N),
         Decoder(DecoderLayer(d_model, c(attn), c(attn), c(ff), dropout), N),
         nn.Sequential(Embeddings(d_model, src_vocab), c(position)),
@@ -57,6 +59,7 @@ def make_model(src_vocab, tgt_vocab, N=6, d_model=512, d_ff=2048, h=8, dropout=0
         Generator(d_model, tgt_vocab),
     )
 
+    # Initialize parameters with Glorot / fan_avg.
     for p in model.parameters():
         if p.dim() > 1:
             nn.init.xavier_uniform_(p)
@@ -140,4 +143,18 @@ if __name__ == "__main__":
 
     set_seed_everywhere(args.seed, args.cuda)
     handle_dirs(args.save_dir)
-    tmp_model = make_model(10, 10, 2)
+
+    if args.reload_from_files and os.path.exists(args.vectorizer_file):
+        dataset = Dataset.load_dataset_and_load_vectorizer(
+            args.dataset_csv, args.vectorizer_file
+        )
+    else:
+        dataset = Dataset.load_dataset_and_make_vectorizer(args.dataset_csv)
+        dataset.save_vectorizer(args.vectorizer_file)
+
+    vectorizer = dataset.get_vectorizer()
+
+    source_vocab = vectorizer.source_vocab
+    target_vocab = vectorizer.target_vocab
+
+    model = make_model(source_vocab, target_vocab)
