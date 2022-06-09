@@ -56,7 +56,7 @@ class Dataset(Dataset):
     @staticmethod
     def load_vectorizer_only(vectorizer_filepath):
         with open(vectorizer_filepath) as fp:
-            Vectorizer.from_serializable(json.load(fp))
+            return Vectorizer.from_serializable(json.load(fp))
 
     def save_vectorizer(self, vectorizer_filepath):
         with open(vectorizer_filepath, "w") as fp:

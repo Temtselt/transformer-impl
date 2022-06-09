@@ -57,7 +57,7 @@ def update_train_state(args, model, train_state):
 
         # Stop early?
         train_state["stop_early"] = (
-            train_state["early_stopping_step"] >= args.early_stopoing_criteria
+            train_state["early_stopping_step"] >= args.early_stopping_criteria
         )
 
     return train_state

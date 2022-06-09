@@ -26,9 +26,9 @@ class Vectorizer(object):
 
     def _get_target_indices(self, target_text):
         indices = [
-            self.source_vocab.lookup_token(token) for token in target_text.split(" ")
+            self.target_vocab.lookup_token(token) for token in target_text.split(" ")
         ]
-        x_indices = [self.source_vocab.begin_seq_index] + indices
+        x_indices = [self.target_vocab.begin_seq_index] + indices
         y_indices = indices + [self.target_vocab.end_seq_index]
 
         return x_indices, y_indices
