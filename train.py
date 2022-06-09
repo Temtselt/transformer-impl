@@ -7,7 +7,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
+
 from tqdm.notebook import tqdm
+
 
 from dataset import Dataset
 from model.birnn import NMTModel
@@ -16,7 +18,10 @@ from model.generator import Generator
 from model.multi_head_attention import MultiHeadedAttention
 from model.positionwise_feed_forward import PositionwiseFeedForward
 from model.postional_encoding import PositionalEncoding
-from model.transformer import Decoder, DecoderLayer, Encoder, EncoderLayer, Transformer
+
+from model.transformer import (Decoder, DecoderLayer, Encoder, EncoderLayer,
+                               Transformer)
+
 from utils.bookkeeping import make_train_state, update_train_state
 from utils.helpers import handle_dirs, set_seed_everywhere
 from utils.logger import Logger
