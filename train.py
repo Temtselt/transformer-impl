@@ -7,9 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
-
 from tqdm.notebook import tqdm
-
 
 from dataset import Dataset
 from model.birnn import NMTModel
@@ -18,32 +16,10 @@ from model.generator import Generator
 from model.multi_head_attention import MultiHeadedAttention
 from model.positionwise_feed_forward import PositionwiseFeedForward
 from model.postional_encoding import PositionalEncoding
-
-from model.transformer import (Decoder, DecoderLayer, Encoder, EncoderLayer,
-                               Transformer)
-
+from model.transformer import Decoder, DecoderLayer, Encoder, EncoderLayer, Transformer
 from utils.bookkeeping import make_train_state, update_train_state
 from utils.helpers import handle_dirs, set_seed_everywhere
 from utils.logger import Logger
-
-args = Namespace(
-    dataset_csv="data/lyrics_lite.csv",
-    vectorizer_file="vectorizer.json",
-    model_state_file="model.pth",
-    save_dir="model.storage/cyrillc_to_mongolian",
-    reload_from_files=True,
-    expand_filepaths_to_save_dir=True,
-    cuda=False,
-    seed=1337,
-    learning_rate=5e-4,
-    batch_size=8,
-    num_epochs=100,
-    early_stopping_criteria=5,
-    source_embedding_size=32,
-    target_embedding_size=32,
-    encoding_size=32,
-    catch_keyboard_interrupt=True,
-)
 
 
 def normalize_sizes(y_pred, y_true):
@@ -135,6 +111,25 @@ def batch_size_fn(new, count, sofar):
 
 
 if __name__ == "__main__":
+    args = Namespace(
+        dataset_csv="data/lyrics.csv",
+        vectorizer_file="vectorizer.json",
+        model_state_file="model.pth",
+        save_dir="model.storage/cyrillc_to_mongolian",
+        reload_from_files=True,
+        expand_filepaths_to_save_dir=True,
+        cuda=True,
+        seed=1337,
+        learning_rate=5e-4,
+        batch_size=8,
+        num_epochs=10,
+        early_stopping_criteria=5,
+        source_embedding_size=16,
+        target_embedding_size=16,
+        encoding_size=32,
+        catch_keyboard_interrupt=True,
+    )
+
     if args.expand_filepaths_to_save_dir:
         args.vectorizer_file = os.path.join(args.save_dir, args.vectorizer_file)
         args.model_state_file = os.path.join(args.save_dir, args.model_state_file)
