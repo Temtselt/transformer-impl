@@ -118,10 +118,10 @@ if __name__ == "__main__":
         save_dir="model.storage/cyrillc_to_mongolian",
         reload_from_files=True,
         expand_filepaths_to_save_dir=True,
-        cuda=True,
+        cuda=False,
         seed=1337,
         learning_rate=5e-4,
-        batch_size=8,
+        batch_size=16,
         num_epochs=10,
         early_stopping_criteria=5,
         source_embedding_size=16,
@@ -184,17 +184,19 @@ if __name__ == "__main__":
 
     dataset.set_split("train")
     train_bar = tqdm(
-        desc="split  =   train",
+        desc="split = train",
         total=dataset.get_num_batches(args.batch_size),
         position=1,
         leave=True,
+        bar_format='{l_bar}{r_bar}'
     )
     dataset.set_split("val")
     val_bar = tqdm(
-        desc="split  =     val",
+        desc="split = val",
         total=dataset.get_num_batches(args.batch_size),
         position=1,
         leave=True,
+        bar_format='{l_bar}{r_bar}'
     )
 
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
