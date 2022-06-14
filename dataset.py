@@ -60,7 +60,7 @@ class Dataset(Dataset):
 
     def save_vectorizer(self, vectorizer_filepath):
         with open(vectorizer_filepath, "w") as fp:
-            json.dump(self._vectorizer.to_serializable(), fp)
+            json.dump(self._vectorizer.to_serializable(), fp, ensure_ascii=False)
             Logger.logi(__class__, f"Save vectorizer to {vectorizer_filepath}.")
 
     def get_vectorizer(self):
