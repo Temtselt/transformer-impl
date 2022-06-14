@@ -4,7 +4,7 @@ import pandas as pd
 from torch.utils.data import Dataset
 
 from utils.logger import Logger
-from vectorizer import Vectorizer
+from dataloader.vectorizer import Vectorizer
 
 
 class Dataset(Dataset):

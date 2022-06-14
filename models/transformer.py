@@ -1,40 +1,8 @@
 import torch.nn as nn
+import torch.nn.functional as F
 from utils.helpers import clones
 
-from model.norm import LayerNorm
-from model.sublayer import SublayerConnection
-
-
-class EncoderLayer(nn.Module):
-    def __init__(self, size, self_attn, feed_forward, dropout) -> None:
-        super(EncoderLayer, self).__init__()
-        self.self_attn = self_attn
-        self.feed_forward = feed_forward
-        self.sublayer = clones(SublayerConnection(size, dropout), 2)
-        self.size = size
-
-    def forward(self, x, mask):
-        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x, mask))
-
-        return self.sublayer[1](x, self.feed_forward)
-
-
-class DecoderLayer(nn.Module):
-    def __init__(self, size, self_attn, src_attn, feed_forward, dropout) -> None:
-        super(DecoderLayer, self).__init__()
-        self.size = size
-        self.self_attn = self_attn
-        self.src_attn = src_attn
-        self.feed_forward = feed_forward
-        self.dropout = dropout
-        self.sublayer = clones(SublayerConnection(size, dropout), 3)
-
-    def forward(self, x, memory, src_mask, tgt_mask):
-        m = memory
-        x = self.sublayer[0](x, lambda x: self.self_attn(x, x, x, tgt_mask))
-        x = self.sublayer[1](x, lambda x: self.self_attn(x, m, m, src_mask))
-
-        return self.sublayer[2](x, self.feed_forward)
+from models.transformer.layers.sublayer_connection import LayerNorm
 
 
 class Encoder(nn.Module):
@@ -63,7 +31,20 @@ class Decoder(nn.Module):
         return self.norm(x)
 
 
+class Generator(nn.Module):
+    "Define standard linear + softmax generation step."
+
+    def __init__(self, d_model, vocab) -> None:
+        super(Generator, self).__init__()
+        self.proj = nn.Linear(d_model, vocab)
+
+    def forward(self, x):
+        return F.log_softmax(self.proj(x), dim=-1)
+
+
 class Transformer(nn.Module):
+    "A standard Encoder-Decoder architecture."
+
     def __init__(self, encoder, decoder, src_embed, tgt_embed, generator) -> None:
         super(Transformer, self).__init__()
         self.encoder = encoder

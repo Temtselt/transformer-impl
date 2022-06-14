@@ -4,11 +4,11 @@ from argparse import Namespace
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+from models.rnn.rnn import NMTModel
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from dataset import Dataset
-from model.birnn import NMTModel
+from dataloader.dataset import Dataset
 from utils.bookkeeping import make_train_state, update_train_state
 from utils.helpers import handle_dirs, set_seed_everywhere
 from utils.logger import Logger
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         dataset_csv="data/lyrics.csv",
         vectorizer_file="vectorizer.json",
         model_state_file="model.pth",
-        save_dir="model.storage/cyrillc_to_mongolian",
+        save_dir="model.storage",
         reload_from_files=True,
         expand_filepaths_to_save_dir=True,
         cuda=False,

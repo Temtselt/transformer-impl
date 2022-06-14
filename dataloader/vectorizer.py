@@ -1,6 +1,6 @@
 import numpy as np
 
-from vocabulary import SequenceVocabulary
+from dataloader.vocabulary import SequenceVocabulary
 
 
 class Vectorizer(object):
