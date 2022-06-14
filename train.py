@@ -1,9 +1,7 @@
-import copy
 import os
 from argparse import Namespace
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -11,12 +9,6 @@ from tqdm.auto import tqdm
 
 from dataset import Dataset
 from model.birnn import NMTModel
-from model.embeddings import Embeddings
-from model.generator import Generator
-from model.multi_head_attention import MultiHeadedAttention
-from model.positionwise_feed_forward import PositionwiseFeedForward
-from model.postional_encoding import PositionalEncoding
-from model.transformer import Decoder, DecoderLayer, Encoder, EncoderLayer, Transformer
 from utils.bookkeeping import make_train_state, update_train_state
 from utils.helpers import handle_dirs, set_seed_everywhere
 from utils.logger import Logger
@@ -24,7 +16,6 @@ from utils.logger import Logger
 
 def normalize_sizes(y_pred, y_true):
     """Normalize tensor sizes
-
     Args:
         y_pred (torch.Tensor): the output of the model
             If a 3-dimensional tensor, reshapes to a matrix
@@ -57,30 +48,6 @@ def sequence_loss(y_pred, y_true, mask_index):
     return F.cross_entropy(y_pred, y_true, ignore_index=mask_index)
 
 
-def make_model(src_vocab, tgt_vocab, N=6, d_model=512, d_ff=2048, h=8, dropout=0.1):
-    "Construct a model from hyperparameters."
-
-    c = copy.deepcopy
-    attn = MultiHeadedAttention(h, d_model)
-    ff = PositionwiseFeedForward(d_model, d_ff, dropout)
-    position = PositionalEncoding(d_model, dropout, 512)
-
-    model = Transformer(
-        Encoder(EncoderLayer(d_model, c(attn), c(ff), dropout), N),
-        Decoder(DecoderLayer(d_model, c(attn), c(attn), c(ff), dropout), N),
-        nn.Sequential(Embeddings(d_model, src_vocab), c(position)),
-        nn.Sequential(Embeddings(d_model, tgt_vocab), c(position)),
-        Generator(d_model, tgt_vocab),
-    )
-
-    # Initialize parameters with Glorot / fan_avg.
-    for p in model.parameters():
-        if p.dim() > 1:
-            nn.init.xavier_uniform_(p)
-
-    return model
-
-
 def generate_batches(dataset, batch_size, shuffle=True, drop_last=True, device="cpu"):
     """A generator function which wraps the PyTorch DataLoader."""
     dataloader = DataLoader(
@@ -95,19 +62,6 @@ def generate_batches(dataset, batch_size, shuffle=True, drop_last=True, device="
         for name, tensor in data_dict.items():
             out_data_dict[name] = data_dict[name][sorted_length_indices].to(device)
         yield out_data_dict
-
-
-def batch_size_fn(new, count, sofar):
-    "Keep augmenting batch and calculate total number of tokens + padding."
-    global max_src_in_batch, max_tgt_in_batch
-    if count == 1:
-        max_src_in_batch = 0
-        max_tgt_in_batch = 0
-    max_src_in_batch = max(max_src_in_batch, len(new.src))
-    max_tgt_in_batch = max(max_tgt_in_batch, len(new.trg) + 2)
-    src_elements = count * max_src_in_batch
-    tgt_elements = count * max_tgt_in_batch
-    return max(src_elements, tgt_elements)
 
 
 if __name__ == "__main__":
