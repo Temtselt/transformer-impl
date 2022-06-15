@@ -1,14 +1,15 @@
 import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from utils.helpers import clones
 
 
-class MultiHeadedAttention(nn.Module):
+class MultiHeadAttention(nn.Module):
     def __init__(self, h, d_model, dropout=0.1):
         "Take in model size and number of heads"
-        super(MultiHeadedAttention, self).__init__()
+        super(MultiHeadAttention, self).__init__()
         assert d_model % h == 0
 
         self.d_k = d_model // h

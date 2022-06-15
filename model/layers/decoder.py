@@ -1,5 +1,5 @@
 import torch.nn as nn
-from models.transformer.layers.sublayer_connection import SublayerConnection
+from model.layers.sublayer_connection import LayerNorm, SublayerConnection
 from utils.helpers import clones
 
 
@@ -21,3 +21,16 @@ class DecoderLayer(nn.Module):
         x = self.sublayer[1](x, lambda x: self.self_attn(x, m, m, src_mask))
 
         return self.sublayer[2](x, self.feed_forward)
+
+
+class Decoder(nn.Module):
+    def __init__(self, layer, N) -> None:
+        super(Decoder, self).__init__()
+        self.layers = clones(layer, N)
+        self.norm = LayerNorm(layer.size)
+
+    def forward(self, x, memory, src_mask, tgt_mask):
+        for layer in self.layers:
+            x = layer(x, memory, src_mask, tgt_mask)
+
+        return self.norm(x)
