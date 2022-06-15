@@ -69,7 +69,7 @@ if __name__ == "__main__":
         dataset_csv="data/lyrics.csv",
         vectorizer_file="vectorizer.json",
         model_state_file="model.pth",
-        save_dir="model.storage",
+        save_dir="data/model.storage",
         reload_from_files=True,
         expand_filepaths_to_save_dir=True,
         cuda=False,
