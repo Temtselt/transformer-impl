@@ -52,6 +52,16 @@ class NMTDataset(Dataset):
     def __getitem__(self, index):
         NotImplementedError  # TODO
 
+    def get_num_batches(self, batch_size):
+        """Given a batch size, return the number of batches in the dataset
+
+        Args:
+            batch_size (int)
+        Returns:
+            number of batches in the dataset
+        """
+        return len(self) // batch_size
+
 
 if __name__ == "__main__":
     dataset = NMTDataset.load_dataset("data/lyrics_lite.csv")
