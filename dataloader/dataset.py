@@ -1,4 +1,5 @@
 import pandas as pd
+from tokenizers import Tokenizer
 from torch.utils.data import Dataset
 from utils.logger import Logger
 
@@ -8,9 +9,10 @@ class NMTDataset(Dataset):
     Dataset class for the data.
     """
 
-    def __init__(self, text_df):
+    def __init__(self, text_df, tokenizer):
 
         self.text_df = text_df
+        self._tokenizer = tokenizer
 
         self.train_df = self.text_df[self.text_df["split"] == "train"]
         self.train_size = len(self.train_df)
@@ -38,13 +40,31 @@ class NMTDataset(Dataset):
         self._target_split = split
         self._target_df, self._target_size = self._lookup_dict[split]
 
+    def get_tokenizer(self):
+        return self._tokenizer
+
     @classmethod
-    def load_dataset(cls, dataset_csv):
+    def load_dataset_and_load_tokenizer(cls, dataset_csv, tokenizer_filepath):
         """
-        Loads the data from the csv file.
+        Load dataset and the corresponding vectorizer.
+        Used in the case in the vectorizer has been cached for re-use
         """
+
         text_df = pd.read_csv(dataset_csv)
-        return cls(text_df)
+        tokenizer = cls.load_tokenizer_only(tokenizer_filepath)
+
+        return cls(text_df, tokenizer)
+
+    @classmethod
+    def load_dataset_and_make_tokenizer(cls, dataset_csv):
+        """Load dataset and make a new vectorizer from scratch"""
+        NotImplemented  # TODO
+
+    @staticmethod
+    def load_tokenizer_only(tokenizer_filepath):
+        """a static method for loading the tokenizer from file"""
+
+        return Tokenizer.from_file(tokenizer_filepath)
 
     def __len__(self):
         return self._target_size
@@ -64,5 +84,7 @@ class NMTDataset(Dataset):
 
 
 if __name__ == "__main__":
-    dataset = NMTDataset.load_dataset("data/lyrics_lite.csv")
+    dataset = NMTDataset.load_dataset_and_load_tokenizer(
+        "data/lyrics_lite.csv", "data/lyrics_lite.json"
+    )
     print(dataset._target_df)
