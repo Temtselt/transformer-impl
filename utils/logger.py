@@ -1,4 +1,5 @@
 import datetime
+from rich import print
 
 
 class Logger:
